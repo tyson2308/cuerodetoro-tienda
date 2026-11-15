@@ -15,8 +15,8 @@
 
   /* ============================ AJUSTES ============================ */
   var AJUSTES = {
-    sugerenciasFicha: 3,
-    sugerenciasCarrito: 2,
+    sugerenciasFicha: 4,
+    sugerenciasCarrito: 3,
     envioGratisDesde: 0,          // 0 = sin barra de envío gratis en el carrito
     tituloFicha: 'Combinalo con',
     tituloCarrito: 'Completá el look'
@@ -85,7 +85,12 @@
 
   /* SOLO se sugieren estas categorías (pedido de Nahuel 15/11:
      cinturones y zapatillas MK = Panda). Vacío = se puede sugerir cualquiera. */
-  var SOLO_SUGERIR = ['cinturon', 'zapatilla-mk'];
+  var SOLO_SUGERIR = ['pancha', 'cinturon', 'zapatilla-mk'];
+
+  /* VAN PRIMERO: estas categorías se muestran arriba de todo (hasta
+     "maximo" en la ficha y "maximoCarrito" en el carrito), elegidas por
+     color; después siguen las demás. Pedido de Nahuel 15/11: panchas. */
+  var PRIMERO = { categorias: ['pancha'], maximo: 2, maximoCarrito: 1 };
 
   /* Nunca sugerir estos (dirección del producto). */
   var NUNCA = [];
@@ -207,7 +212,7 @@
 
   /* --------------------------- QUÉ SUGERIR --------------------------- */
   /* base: lo que se mira o se lleva [{cat, colores}]. */
-  function sugerir(base, todos, excluir, cuantas) {
+  function sugerir(base, todos, excluir, cuantas, tope) {
     var cats = {}, cols = {}, combina = {}, cruce = [];
     base.forEach(function (b) {
       cats[b.cat] = 1;
@@ -226,7 +231,7 @@
       if (ci >= 0) c.puntos = 300 - ci * 30;
       else if (cats[p.cat]) c.puntos = 60;
       else c.puntos = 40;
-      if (mismo) { c.puntos += 100; c.motivo = ci >= 0 ? 'A juego, mismo color' : 'Otro modelo, mismo color'; }
+      if (mismo) { c.puntos += 100; c.motivo = ci >= 0 ? 'A juego, mismo color' : (cats[p.cat] ? 'Otro modelo, mismo color' : 'Mismo color'); }
       else if (comb) { c.puntos += 60; c.motivo = 'Combina en color'; }
       else if (hayColor && p.colores.length) { c.puntos -= 200; c.motivo = 'También te puede gustar'; }
       else c.motivo = ci >= 0 ? 'Va con tu elección' : 'También te puede gustar';
@@ -242,7 +247,8 @@
     lista.sort(function (a, b) { return b.puntos - a.puntos; });
     /* Sin repetir categoría cruzada dos veces seguidas si hay alternativa. */
     var out = [], usadas = {};
-    lista.forEach(function (c) { if (cuantas > out.length && !usadas[c.p.cat + c.color]) { usadas[c.p.cat + c.color] = 1; out.push(c); } });
+    lista.forEach(function (c) { if (tope > out.length && PRIMERO.categorias.indexOf(c.p.cat) >= 0) out.push(c); });
+    lista.forEach(function (c) { if (cuantas > out.length && out.indexOf(c) === -1 && PRIMERO.categorias.indexOf(c.p.cat) === -1 && !usadas[c.p.cat + c.color]) { usadas[c.p.cat + c.color] = 1; out.push(c); } });
     lista.forEach(function (c) { if (cuantas > out.length && out.indexOf(c) === -1) out.push(c); });
     return out;
   }
@@ -328,7 +334,7 @@
       var elegido = colorElegido();
       var base = { cat: yo ? yo.cat : categoriaDe(nombre), colores: elegido.length ? elegido : (yo ? yo.colores : coloresDe(nombre)) };
       var excluir = {}; excluir[idp.value] = 1;
-      var lista = sugerir([base], todos, excluir, AJUSTES.sugerenciasFicha);
+      var lista = sugerir([base], todos, excluir, AJUSTES.sugerenciasFicha, PRIMERO.maximo);
       var viejo = document.getElementById('cs-ficha');
       if (viejo) viejo.remove();
       if (!lista.length) return;
@@ -395,7 +401,7 @@
       if (excluir.__cinto) yaLleva.cinturon = 1;
       var lista = sugerir(base, todos.filter(function (p) {
         return !((p.cat === 'cinturon' || p.cat === 'billetera') && yaLleva[p.cat]);
-      }), excluir, AJUSTES.sugerenciasCarrito);
+      }), excluir, AJUSTES.sugerenciasCarrito, PRIMERO.maximoCarrito);
       if (lista.length) li.appendChild(caja('cs-carrito', AJUSTES.tituloCarrito, '', lista));
       else if (!li.children.length) li.remove();
     });
