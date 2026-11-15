@@ -2,7 +2,7 @@
 
 Scripts propios de la tienda cuerodetoro.com.ar (Empretienda).
 
-- `compra-sugerida.js`: fuente comentada de la compra sugerida por color ("Combinalo con" en la ficha de producto + "Completá el look" en el carrito). Sugiere primero panchas y después cinturones y zapatillas Panda, del mismo color o que combinen. Los ajustes están arriba de todo.
+- `compra-sugerida.js`: fuente comentada de la compra sugerida por color ("Combinalo con" en la ficha de producto + "Completá el look" en el carrito). Sugiere primero panchas (Pax y Junior) y después cinturones, del mismo color o que combinen. Los ajustes están arriba de todo.
 - `compra-sugerida.min.js`: versión comprimida que carga la tienda vía jsDelivr.
 
 En Etiquetas HTML (head) de Empretienda va una sola línea:

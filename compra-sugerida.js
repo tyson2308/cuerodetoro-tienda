@@ -2,8 +2,8 @@
    CUERO DE TORO · Compra sugerida por color (ficha de producto + carrito)
    - En la ficha: "Combinalo con" debajo del botón de compra.
    - En el carrito: "Completá el look".
-   Empareja por COLOR y cruza categorías: si mirás o llevás calzado, te
-   sugiere el cinturón y la billetera del mismo color (o que combinen).
+   Empareja por COLOR: sugiere panchas (Pax y Junior) primero y después
+   cinturones del mismo color (o de un color que combine).
    Lee el catálogo en vivo (/v4/product), así que los productos nuevos
    entran solos. Ojo: no usar el signo menor en el código; usar \x3c.
    ---------------------------------------------------------------------
@@ -29,7 +29,7 @@
     ['combo',     ['promo', '2 x1', '2x1', ' + ']],
     ['cinturon',  ['cinturon', 'cinto']],
     ['billetera', ['billetera']],
-    ['pancha',    ['pancha']],
+    ['pancha',    ['pancha']],     // Pax y Junior (las Panchitas no entran: dicen "panchita")
     ['bota',      ['bota', 'borcego', 'polo', 'lucca']],
     ['zapato',    ['zapato']],
     ['zapatilla-mk', ['panda']],   // las "MK" son las Panda
@@ -38,14 +38,14 @@
 
   /* QUÉ SUGERIR según lo que se mira o se lleva, en orden de prioridad. */
   var CRUCES = {
-    'zapatilla-mk': ['cinturon'],
-    zapatilla: ['cinturon', 'zapatilla-mk'],
-    zapato:    ['cinturon', 'zapatilla-mk'],
-    bota:      ['cinturon', 'zapatilla-mk'],
-    pancha:    ['cinturon', 'zapatilla-mk'],
-    cinturon:  ['zapatilla-mk'],
-    billetera: ['cinturon', 'zapatilla-mk'],
-    mate:      ['cinturon', 'zapatilla-mk']
+    'zapatilla-mk': ['pancha', 'cinturon'],
+    zapatilla: ['pancha', 'cinturon'],
+    zapato:    ['pancha', 'cinturon'],
+    bota:      ['pancha', 'cinturon'],
+    pancha:    ['cinturon', 'pancha'],
+    cinturon:  ['pancha'],
+    billetera: ['pancha', 'cinturon'],
+    mate:      ['pancha', 'cinturon']
   };
 
   /* COLORES: color base y las palabras que lo nombran (por raíz:
@@ -84,8 +84,9 @@
   };
 
   /* SOLO se sugieren estas categorías (pedido de Nahuel 15/11:
-     cinturones y zapatillas MK = Panda). Vacío = se puede sugerir cualquiera. */
-  var SOLO_SUGERIR = ['pancha', 'cinturon', 'zapatilla-mk'];
+     panchas Pax y Junior + cinturones). Vacío = se puede sugerir cualquiera.
+     Para volver a sumar las zapatillas Panda: agregar 'zapatilla-mk'. */
+  var SOLO_SUGERIR = ['pancha', 'cinturon'];
 
   /* VAN PRIMERO: estas categorías se muestran arriba de todo (hasta
      "maximo" en la ficha y "maximoCarrito" en el carrito), elegidas por
@@ -231,7 +232,7 @@
       if (ci >= 0) c.puntos = 300 - ci * 30;
       else if (cats[p.cat]) c.puntos = 60;
       else c.puntos = 40;
-      if (mismo) { c.puntos += 100; c.motivo = ci >= 0 ? 'A juego, mismo color' : (cats[p.cat] ? 'Otro modelo, mismo color' : 'Mismo color'); }
+      if (mismo) { c.puntos += 100; c.motivo = cats[p.cat] ? 'Otro modelo, mismo color' : (ci >= 0 ? 'A juego, mismo color' : 'Mismo color'); }
       else if (comb) { c.puntos += 60; c.motivo = 'Combina en color'; }
       else if (hayColor && p.colores.length) { c.puntos -= 200; c.motivo = 'También te puede gustar'; }
       else c.motivo = ci >= 0 ? 'Va con tu elección' : 'También te puede gustar';
@@ -249,6 +250,8 @@
     var out = [], usadas = {};
     lista.forEach(function (c) { if (tope > out.length && PRIMERO.categorias.indexOf(c.p.cat) >= 0) out.push(c); });
     lista.forEach(function (c) { if (cuantas > out.length && out.indexOf(c) === -1 && PRIMERO.categorias.indexOf(c.p.cat) === -1 && !usadas[c.p.cat + c.color]) { usadas[c.p.cat + c.color] = 1; out.push(c); } });
+    lista.forEach(function (c) { if (cuantas > out.length && out.indexOf(c) === -1 && PRIMERO.categorias.indexOf(c.p.cat) === -1) out.push(c); });
+    /* Si sobra lugar, se completa con más de las que van primero. */
     lista.forEach(function (c) { if (cuantas > out.length && out.indexOf(c) === -1) out.push(c); });
     return out;
   }
